@@ -1,4 +1,4 @@
-[Nerdblog.io](https://i.imgur.com/Lborxa2.png)
+![Nerdblog.io](https://i.imgur.com/Lborxa2.png)
 
 # RaffleRigger
 Script for Importing Raffle Entries, choosing winners, and exporting into a csv file for paypal batch invoice upload.
@@ -14,6 +14,4 @@ It will create a new csv file called "Winners.csv"
 
 you can upload the file at https://www.paypal.com/invoice/batch
 
-Nerdblog.io
-
-[Nerdblog.io](https://i.imgur.com/K20uFGm.png)
+![Nerdblog.io](https://i.imgur.com/K20uFGm.png)
