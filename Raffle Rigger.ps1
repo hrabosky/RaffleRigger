@@ -33,7 +33,7 @@ The idea is you have a google form for your raffle, with the fields PaypalEmail,
 and a yes or no question if they're international. You would then export your results from your google sheets
 into an excel spreadsheet with the following cell values, A1 = "PaypalEmail", B1 = "FirstName", C1 = "LastName", D1 = "International",
 E1 = "Address". Save the excel file as a .csv (you can also do it with notepad, but have to separate with commas.)
-The Data object has a few fields for your paypal invoicing that you can write in. Should be at line # 149
+The Data object has a few fields for your paypal invoicing that you can write in. Should be at line # 116
 #>
 
 #This is used to add to paypal memos, "Thank you for supporting ______!"
