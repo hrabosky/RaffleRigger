@@ -36,6 +36,9 @@ E1 = "Address". Save the excel file as a .csv (you can also do it with notepad, 
 The Data object has a few fields for your paypal invoicing that you can write in. Should be at line # 149
 #>
 
+#This is used to add to paypal memos, "Thank you for supporting ______!"
+$ArtisanID = Read-Host "What is your artisan handle?"
+
 #This is the amount of people to win
 $AmountOfWinners = Read-Host "How many individual winners?"
 
@@ -123,7 +126,7 @@ foreach ($w in $Winners) {
 		'Shipping Amount' = $ShippingCost
 		'Discount' = ""
 		'Currency' = "USD"
-		'Note to Customer' = "Thank you for supporting Nerdblog.io!"
+		'Note to Customer' = "Thank you for supporting $ArtisanID!"
 		'Terms and Conditions' = ""
 		'Memo to Self' = ""
 	}
