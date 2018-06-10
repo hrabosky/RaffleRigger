@@ -6,6 +6,11 @@ Script for Importing Raffle Entries, choosing winners, and exporting into a csv 
 Paypal only needs columns for their csv, Email,item,item amount, and shipping amount.
 With that in mind, 
 
+If it is your first time running a powershell script:
+1. Open Powershell as administrator
+2. type the following command: Set-ExecutionPolicy Unrestricted
+3. Say yes to all.
+
 1. Download all csv files into the same directory.
 2. Add banned user's addresses to the blacklist file.
 3. Edit RaffleEntries.csv with your Raffle Entries, keep the headers the same.
