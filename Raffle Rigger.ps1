@@ -6,6 +6,11 @@ Add-Type -AssemblyName Microsoft.VisualBasic
  / /|  /  __/ /  / /_/ / /_/ / / /_/ / /_/ / / / /_/ /
 /_/ |_/\___/_/   \__,_/_.___/_/\____/\__, (_)_/\____/
                                     /____/
+
+ ____ ____ ____
+||H |||W |||S ||
+||__|||__|||__||
+|/__\|/__\|/__\|
  ____ ____ ____ ____ ____ ____
 ||R |||a |||f |||f |||l |||e ||
 ||__|||__|||__|||__|||__|||__||
@@ -28,7 +33,7 @@ The idea is you have a google form for your raffle, with the fields PaypalEmail,
 and a yes or no question if they're international. You would then export your results from your google sheets
 into an excel spreadsheet with the following cell values, A1 = "PaypalEmail", B1 = "FirstName", C1 = "LastName", D1 = "International",
 E1 = "Address". Save the excel file as a .csv (you can also do it with notepad, but have to separate with commas.)
-The Data object has a few fields for your paypal invoicing that you can write in. Should be at line # 116
+The Data object has a few fields for your paypal invoicing that you can write in. Should be at line # 149
 #>
 
 #This is used to add to paypal memos, "Thank you for supporting ______!"
@@ -45,17 +50,22 @@ $WinnerPaypalCsv = ".\Winners.csv"
 #Banned users.
 $BlacklistCsv = ".\Blacklist.csv"
 #Imports blacklist
-$BlackListUsers = Import-Csv $BlacklistCsv | sort Address -Unique
+$BlackListUsers = Import-Csv $BlacklistCsv 
 
 
 #Prompt user for necessary information (paypal invoicing).
 $KeycapName = Read-Host "What is the keycap name you are raffling?"
 $Keycapvalue = Read-Host "How much are you selling the $KeycapName for?"
+$IntShipCost = Read-Host "How much are you charging for international shipping?"
+$ConusShipCost = Read-Host "How much are you charging for conus shipping?"
+$InvoiceNumber = Read-Host "What is your last Paypal invoice number?"
+
 
 #The line below imports the entries and removes duplicates based on addresses.
 $EntryList = Import-Csv $RaffleEntriesCsv | sort Address -Unique
 
 #Declare arrays | Variables
+$ErrorActionPreference = "SilentlyContinue"
 $PaypalEmail = @()
 $International = @()
 $Firstname = @()
@@ -69,8 +79,9 @@ $Data = ""
 their paypal email, along with if they're international or not.
 It also generates a random number 1-1000 and stores the combined points in a new object. #>
 foreach ($u in $EntryList) {
-	if ($BlackListUsers | Where-Object { $_.Address -eq $($u.Address) }) {
-		Write-Host "" $u.Address " is banned"
+	$Check = $($u.Address.Tolower()) -replace "\W" 
+	if ($BlackListUsers | Where-Object { ($($_.Address.ToLower()) -replace "\W") -eq $Check  -or $_.PaypalEmail.Split('@')[0].ToLower() -eq $($u.PaypalEmail).split('@')[0].ToLower() }) {
+		Write-Host "" $u.PaypalEmail " is banned"
 	} else {
 		$PaypalEmail = $($u.PaypalEmail)
 		$International = $($u.International)
@@ -101,18 +112,18 @@ if (Test-Path $WinnerPaypalCsv) {
 
 #Export winners to Paypal csv
 foreach ($w in $Winners) {
-
+$InvoiceNumber++
 	if ($w.International -eq 'Yes') {
-		$ShippingCost = '13.00'
+		$ShippingCost = $IntShipCost
 	} else {
-		$ShippingCost = '5.00'
+		$ShippingCost = $ConusShipCost
 	}
 
 	$Data += New-Object PSObject -Property @{
 		'Recipient Email' = $w.PaypalEmail
 		'Recipient First Name' = $w.FirstName
 		'Recipient Last Name' = $w.LastName
-		'Invoice Number' = ""
+		'Invoice Number' = $InvoiceNumber
 		'Due Date' = ""
 		'Reference' = ""
 		'Item Name' = $KeycapName
@@ -122,7 +133,7 @@ foreach ($w in $Winners) {
 		'Discount' = ""
 		'Currency' = "USD"
 		'Note to Customer' = "Thank you for supporting $ArtisanID!"
-		'Terms and Conditions' = ""
+		'Terms and Conditions' = "These keycaps are handmade. There is individual variation in shape, color, and pattern due to the nature of the creation process. By purchasing, you acknowledge that the keycap(s) you receive will not look exactly like the one pictured unless stated otherwise. This disclaimer does not cover defects in manufacturing."
 		'Memo to Self' = ""
 	}
 
