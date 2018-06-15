@@ -16,7 +16,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 ||__|||__|||__|||__|||__|||__||
 |/__\|/__\|/__\|/__\|/__\|/__\|
 
-V1.2
+V1.25
 
 Hey All, thank you for your interest in my script.
 My name is John and I have a site called nerdblog.io
@@ -76,7 +76,7 @@ their paypal email, along with if they're international or not.
 It also generates a random number 1-1000 and stores the combined points in a new object. #>
 foreach ($u in $EntryList) {
 	$Check = $($u.Address.Tolower()) -replace "\W" 
-	if ($BlackListUsers | Where-Object { ($($_.Address.ToLower()) -replace "\W") -eq $Check  -or $_.PaypalEmail.Split('@')[0].ToLower() -eq $($u.PaypalEmail).split('@')[0].ToLower() }) {
+	if ($BlackListUsers | Where-Object { ($($_.Address.ToLower()) -replace "\W") -eq $Check  -or $_.PaypalEmail.Split('+@')[0].ToLower() -eq $($u.PaypalEmail).split('+@')[0].ToLower() }) {
 		Write-Host "" $u.PaypalEmail " is banned"
 	} else {
 		$PaypalEmail = $($u.PaypalEmail)
