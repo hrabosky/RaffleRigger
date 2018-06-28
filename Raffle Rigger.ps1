@@ -16,7 +16,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 ||__|||__|||__|||__|||__|||__||
 |/__\|/__\|/__\|/__\|/__\|/__\|
 
-V2.00
+V2.2
 
 Hey All, thank you for your interest in my script.
 My name is John and I have a site called nerdblog.io
@@ -51,7 +51,7 @@ $BlacklistCsv = ".\Blacklist.csv"
 $BlackListUsers = Import-Csv $BlacklistCsv
 
 #The line below imports the entries and removes duplicates based on addresses.
-$EntryList = Import-Csv $RaffleEntriesCsv | sort Address -Unique
+$EntryList = Import-Csv $RaffleEntriesCsv | Sort-Object Address -Unique
 
 do
 {
@@ -71,7 +71,7 @@ switch ($RaffleType) {
 		$Keycapvalue = Read-Host "How much are you selling the $KeycapName for?"
 		$IntShipCost = Read-Host "How much are you charging for international shipping?"
 		$ConusShipCost = Read-Host "How much are you charging for conus shipping?"
-		[int]$InvoiceNumber = Read-Host "What is your last Paypal invoice number?"
+		
 
 		#Declare arrays | Variables
 		$ErrorActionPreference = "SilentlyContinue"
@@ -105,7 +105,6 @@ switch ($RaffleType) {
 					"First Name" = $Firstname
 					"Last Name" = $LastName
 					Address = $Address
-					Points = $Points
 					CombinedPoints = [int]$CombinedPoints
 				}
 			}
@@ -121,7 +120,7 @@ switch ($RaffleType) {
 
 		#Export winners to Paypal csv
 		foreach ($w in $Winners) {
-			$InvoiceNumber++
+			
 			if ($w.International -eq 'Yes') {
 				$ShippingCost = $IntShipCost
 			} else {
@@ -132,7 +131,7 @@ switch ($RaffleType) {
 				'Recipient Email' = $w. "Paypal Email"
 				'Recipient First Name' = $w. "First Name"
 				'Recipient Last Name' = $w. "Last Name"
-				'Invoice Number' = $InvoiceNumber
+				'Invoice Number' = ""
 				'Due Date' = ""
 				'Reference' = ""
 				'Item Name' = $KeycapName
@@ -193,7 +192,8 @@ switch ($RaffleType) {
 		#Prompt user for necessary information (paypal invoicing).
 		$IntShipCost = Read-Host "How much are you charging for international shipping?"
 		$ConusShipCost = Read-Host "How much are you charging for conus shipping?"
-		$InvoiceNumber = Read-Host "What is your last Paypal invoice number?"
+		$winnerCounts = @{}
+
 
 		for ($j = 0; $j -lt $AmountOfKeycaps; $j++) {
 			$number = $j + 1
@@ -209,34 +209,42 @@ switch ($RaffleType) {
 			$LastName = @()
 			$Address = @()
 			$Entry = @()
-			$Data = ""
+			$IndividualWins = @()
+			$data = @{}
+			
 
 			<#Cycles through each raffle entry, compares it against the blacklist and stores
 	their paypal email, along with if they're international or not.
 	It also generates a random number 1-1000 and stores the combined points in a new object. #>
 
 			foreach ($u in $EntryList) {
+
 				if ($($u. "Keycap [$KeycapName]") -eq "Yes") {
 					$Check = $($u.Address.ToLower()) -replace "\W"
-					if ($BlackListUsers | Where-Object { ($($_.Address.ToLower()) -replace "\W") -eq $Check -or $_. "Paypal Email".Split('+@')[0].ToLower() -eq $($u. "Paypal Email").Split('+@')[0].ToLower() }) {
-						Write-Host "" $u . "Paypal Email" " is banned"
-					} else {
+					if ($BlackListUsers | Where-Object { ($($_.Address.ToLower()) -replace "\W") -eq $Check -or $_. "Paypal Email".Split('+@')[0].ToLower() -eq $($u. "Paypal Email").Split('+@')[0].ToLower()}) {
+						Write-Host "" $($u. "Paypal Email") " is banned"
+					}
+					elseif ($winnerCounts[$($u."Paypal Email")]."Winner Count" -eq $($u. "How many keycaps do you want to purchase?")) {
+						Write-Host "" $($u. "Paypal Email") " won his max limit"
+					}					
+					else {
 						$PaypalEmail = $($u. "Paypal Email")
 						$International = $($u.International)
 						$FirstName = $($u. "First Name")
 						$LastName = $($u. "Last Name")
 						$Address = $($u.Address)
+						[int]$IndividualWins = $($u. "How many keycaps do you want to purchase?")
 						$CombinedPoints = Get-Random 1000
-
-						$Entry += New-Object PSObject -Property @{
+                        $Entry += New-Object PSObject -Property @{
 							"Paypal Email" = $PaypalEmail
 							International = $International
 							"First Name" = $Firstname
 							"Last Name" = $LastName
 							Address = $Address
-							Points = $Points
+							"Individual Wins" = [int]$IndividualWins
 							CombinedPoints = [int]$CombinedPoints
 						}
+                        
 					}
 				}
 			}
@@ -245,45 +253,69 @@ switch ($RaffleType) {
 
 			#Imports the Winners csv file.
 			if (Test-Path $WinnerPaypalCsv) {
-				[array]$Data = Import-Csv -Path $WinnerPaypalCsv
+				Import-Csv -Path $WinnerPaypalCsv | ForEach-Object {
+					$data.Add($_. 'Recipient Email',$_)
+				}
 			}
+              
 
 			#Export winners to Paypal csv
 			foreach ($w in $Winners) {
-				$InvoiceNumber++
 				if ($w.International -eq 'Yes') {
 					$ShippingCost = $IntShipCost
 				} else {
 					$ShippingCost = $ConusShipCost
 				}
 
-				$Data += New-Object PSObject -Property @{
-					'Recipient Email' = $w. "Paypal Email"
-					'Recipient First Name' = $w. "First Name"
-					'Recipient Last Name' = $w. "Last Name"
-					'Invoice Number' = $InvoiceNumber
-					'Due Date' = ""
-					'Reference' = ""
-					'Item Name' = $KeycapName
-					'Description' = ""
-					'Item Amount' = $Keycapvalue
-					'Shipping Amount' = $ShippingCost
-					'Discount' = ""
-					'Currency' = "USD"
-					'Note to Customer' = "Thank you for supporting $ArtisanID!"
-					'Terms and Conditions' = "These keycaps are handmade. There is individual variation in shape, color, and pattern due to the nature of the creation process. By purchasing, you acknowledge that the keycap(s) you receive will not look exactly like the one pictured unless stated otherwise. This disclaimer does not cover defects in manufacturing."
-					'Memo to Self' = ""
+				if ($winnerCounts.Contains($w. "Paypal Email")) {
+					#$winnerCounts[$w. "Paypal Email"]. "Winner Count" = ([int]$winnerCounts[$w. "Paypal Email"]. "Winner Count") - 1
+                     $WinnerCounts[$w. "Paypal Email"]. "Winner Count" = ($WinnerCounts[$w. "Paypal Email"]. "Winner Count") + 1
+                        
+                        
 				}
+				else {
+					$winnerCounts.Add(
+						$w. "Paypal Email",
+						[pscustomobject]@{
+							'Winner Email' = $w. "Paypal Email"
+							'Winner Count' =  1
+						}
+					)
+                                       
+				}
+                
+                
 
-				<#
-	Adds the winners to csv file. / the properties below are what gets exported, while only the necessary columns
-	were added, you could hard code in due date, or Currency to USD... etc
-	#>
+				if ($data.Contains($w. "Paypal Email")) {
+					$data[$w. "Paypal Email"]. "Item Name" += ", $KeycapName"
+					$data[$w. "Paypal Email"]. "Item Amount" = [int]$data[$w. "Paypal Email"]. "Item Amount" + $Keycapvalue
 
-				$Data | Select-Object "Recipient Email","Recipient First Name","Recipient Last Name","Invoice Number","Due Date","Reference",
-				"Item Name","Description","Item Amount","Shipping Amount","Discount","Currency","Note to Customer","Terms and Conditions","Memo to Self" | Export-Csv -Path $WinnerPaypalCsv -NoTypeInformation
+				} else {
+					$data.Add(
+						$w. "Paypal Email",
+						[pscustomobject]@{
+							'Recipient Email' = $w. "Paypal Email"
+							'Recipient First Name' = $w. "First Name"
+							'Recipient Last Name' = $w. "Last Name"
+							'Invoice Number' = ""
+							'Due Date' = ""
+							'Reference' = ""
+							'Item Name' = $KeycapName
+							'Description' = ""
+							'Item Amount' = [int]$Keycapvalue
+							'Shipping Amount' = $ShippingCost
+							'Discount' = ""
+							'Currency' = "USD"
+							'Note to Customer' = "Thank you for supporting $ArtisanID!"
+							'Terms and Conditions' = "These keycaps are handmade. There is individual variation in shape, color, and pattern due to the nature of the creation process. By purchasing, you acknowledge that the keycap(s) you receive will not look exactly like the one pictured unless stated otherwise. This disclaimer does not cover defects in manufacturing."
+							'Memo to Self' = ""
+						}
+					)
+				}
 			}
-
+            
+			$data.Values | Export-Csv $WinnerPaypalCsv -NoTypeInformation
+            
 			#One second delay
 			Start-Sleep -s 1
 
@@ -321,6 +353,10 @@ switch ($RaffleType) {
 
 
 }
+
+
+
+
 
 Write-Host "Thank you for supporting
 
