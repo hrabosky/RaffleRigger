@@ -1,4 +1,5 @@
-Paypal Email,First Name,Last Name,Address,International,Keycap [Miami],Keycap [Carbon],Keycap [Hyperfuse]
-User1@gmail.com,User,One,11 lane,No,,,Yes
-john@nerdblog.io,john,hrabosky,13 lane,Yes,Yes,,
-Tim@nerdblog.io,Tim,Bruno,14 lane,Yes,Yes,Yes,Yes
+Paypal Email,First Name,Last Name,Address,International,Keycap [Miami],Keycap [Carbon],Keycap [Hyperfuse],How many keycaps do you want to purchase?
+User1@gmail.com,User,One,11 lane,No,,,Yes,1
+User2@gmail.com,Jesus,Man,12 lane,No,,Yes,,1
+john@nerdblog.io,john,hrabo,13 lane,Yes,Yes,,,1
+Tim@nerdblog.io,Tim,brad,14 lane,Yes,Yes,Yes,Yes,2
